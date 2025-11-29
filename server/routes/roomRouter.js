@@ -5,11 +5,11 @@ import { createRoom, getHotelsByOwner, getRoom, getRoomsByHotel, toggleRoomAvail
 
 const roomRouter = express.Router();
 
+//POST rooms
 roomRouter.post('/', upload.array("images", 5), authenticateUser, createRoom);
-roomRouter.get('/', getRoom);
 
-// GET hotels belonging to ANY owner
-roomRouter.get("/hotels/:ownerId", getHotelsByOwner);
+//GET available rooms
+roomRouter.get('/', getRoom);
 
 // GET rooms for a specific hotel
 roomRouter.get("/all-rooms-by-hotels/:hotelId", getRoomsByHotel);
