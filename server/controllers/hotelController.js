@@ -13,7 +13,7 @@ export const registerHotel = async (req, res) => {
             return res.json({ success: false, message: "Hotel already registered by this owner." });
         }
 
-        await HotelModel.create({ name, address, contact, owner, city, owner });
+        await HotelModel.create({ name, address, contact, owner, city });
         await UserModel.findByIdAndUpdate(owner, { role: "HotelOwners" });
 
         res.json({ success: true, message: "Hotel registered successfully." });

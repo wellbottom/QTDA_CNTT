@@ -6,9 +6,9 @@ const hotelSchema = new mongoose.Schema({
     contact:{type:String, required:true},
     owner:{type:mongoose.Schema.Types.ObjectId, required:true, ref: "UserModel"}, 
     city: {type:String, required:true},
-    image: {type: String, required:true}
+    image: {type: String, required:false}
 },{timestamps:true}
 );
 
-const HotelModel = mongoose.model("Hotel", hotelSchema);
+const HotelModel = mongoose.model("HotelModel", hotelSchema);
 export default HotelModel;

@@ -1,8 +1,8 @@
 import mongoose, { Mongoose } from "mongoose";
 
 const roomSchema = new mongoose.Schema({
-    hotel :{type: mongoose.Schema.Types.ObjectId, required: true, ref:"Hotel"},
-    roomType:{tpye: String, required: true},
+    hotel :{type: mongoose.Schema.Types.ObjectId, required: true, ref:"HotelModel"},
+    roomType:{type: String, required: true},
     pricePerNight:{type: Number, required: true},
     amenities: {type: Array},
     images: [{type: String, required: true}],
@@ -11,5 +11,5 @@ const roomSchema = new mongoose.Schema({
 },{timestamps:true}
 );
 
-const RoomModel = mongoose.model("Hotel", hotelSchema);
+const RoomModel = mongoose.model("HotelModel", roomSchema);
 export default RoomModel;
