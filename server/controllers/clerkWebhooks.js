@@ -45,7 +45,7 @@ const clerkWebHooks = async (req, res) => {
                 console.log("User updated with ID:", data.id);
                 return res.status(200).send("User updated");
             default:
-                return res.status(200).send("Event type not handled");
+                break;
         }
         res.json({ success: true, message: "Webhook received and processed." });
     } catch (err) {
