@@ -1,4 +1,4 @@
-import { populate } from "dotenv";
+
 import HotelModel from "../models/Hotels.js";
 import RoomModel from "../models/Room.js";
 import { v2 as cloudinary } from "cloudinary"

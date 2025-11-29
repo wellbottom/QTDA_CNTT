@@ -1,7 +1,7 @@
 import express from 'express'
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
-import { createRoom, getHotelsByOwner, getRoom, getRoomsByHotel, toggleRoomAvailability } from '../controllers/roomController.js';
+import { createRoom, getRoom, getRoomsByHotel, toggleRoomAvailability } from '../controllers/roomController.js';
 
 const roomRouter = express.Router();
 
