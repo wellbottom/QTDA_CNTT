@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
     email:{type:String, required:true, unique:true},
     image:{type:String, required:true},
     role:{type:String, enum:["User", "HotelOwners"], default:"User"},
+    recentSearchedItems:[{type:String, required:true}]
     //optional fields could be recent searched items for whatever reason but i just don't see the points
 },{timestamps:true}
 );
