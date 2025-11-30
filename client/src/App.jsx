@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import RoomList from './pages/RoomList';
 import RoomDetails from './pages/RoomDetails';
 import MyBookings from './pages/MyBooking';
-import HotelRegistration from './components/HotelRegistration';
+import HotelRegistration from './pages/HotelRegistration';
 import Layout from './pages/HotelOwners/Layout';
 import Dashboard from './pages/HotelOwners/Dashboard';
 import AddRoom from './pages/HotelOwners/AddRoom';
@@ -26,7 +26,7 @@ const App = () => {
     <div>
       <Toaster/>
       {!isOwnerPath && <NavBar />}
-      {showHotelReg && <HotelRegistration />}
+
       <div className='min-h-[70vh]'>
 
         <Routes>
@@ -34,6 +34,8 @@ const App = () => {
           <Route path='/rooms' element={<RoomList />} />
           <Route path='/rooms/:id' element={<RoomDetails />} />
           <Route path='/my-booking' element={<MyBookings />} />
+          <Route path='/hotel-register' element={<HotelRegistration />} />
+          
           <Route path='/my-hotels' element={<Layout />}>
             {/* Nested routes for hotel owners can be added here */}
             <Route index element={<Dashboard/>} />

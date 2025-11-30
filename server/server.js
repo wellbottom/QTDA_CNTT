@@ -22,7 +22,11 @@ app.use(cors()); //enable cross-origin resource sharing
 
 app.use(express.json()); //body parser
 
-app.use(clerkMiddleware());
+app.use(clerkMiddleware({
+    debug:true,
+    publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+    secretKey: process.env.CLERK_SECRET_KEY,
+}));
 
 //API to listen to Clerk webhooks
 app.use("/api/clerk", clerkWebHooks);
@@ -35,4 +39,4 @@ app.use('/api/bookings', bookingRouter);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, ()=> console.log('Server running on port ' + PORT));
+app.listen(PORT, () => console.log('Server running on port ' + PORT));

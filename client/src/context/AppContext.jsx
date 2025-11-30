@@ -27,13 +27,20 @@ export const AppProvider = ({ children }) => {
 
     const fetchUser = async () =>{
         try {
+
+            //debug
+            const token = await getToken();
+            console.log("Token retrieved:", token ? "EXISTS" : "MISSING");
+
+            //end debug
             const {data} = await axios.get('/api/user', {headers: {Authorization: `Bearer ${await getToken()}`}})
             
             if(data.success){
                 setIsOwner(data.role === "HotelOwner");
                 setSearchedCities(data.recentSearchCities);
             }else{
-                setTimeout(() =>{fetchUser()}, 5000 )
+                console.log(data.message)
+                // setTimeout(() =>{fetchUser()}, 5000 )
             }
         } catch (error) {
             toast.error(error.message)
