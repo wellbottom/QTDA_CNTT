@@ -1,6 +1,6 @@
 import express from 'express';
-import { authenticateUser } from '../middleware/authMiddleware';
-import { getUserData, storeRecentSearchItems } from '../controllers/userController';
+import { authenticateUser } from '../middleware/authMiddleware.js';
+import { getUserData, storeRecentSearchItems } from '../controllers/userController.js';
 
 const userRouter = express.Router();
 

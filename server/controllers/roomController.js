@@ -92,7 +92,7 @@ export const getRoomsByHotel = async (req, res) => {
 
         res.json({ success: true, rooms });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        res.json({ success: false, message: err.message });
     }
 };
 
