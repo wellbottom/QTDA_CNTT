@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import NavBar from './components/Navbar';
 import { Routes, Route, useLocation } from 'react-router-dom';
+import {Toaster} from 'react-hot-toast';
+
+
 import Home from './pages/Home';
 import RoomList from './pages/RoomList';
 import RoomDetails from './pages/RoomDetails';
 import MyBookings from './pages/MyBooking';
-import HotelRegistration from './pages/HotelRegistration';
+import HotelRegistration from './components/HotelRegistration';
 import Layout from './pages/HotelOwners/Layout';
 import Dashboard from './pages/HotelOwners/Dashboard';
 import AddRoom from './pages/HotelOwners/AddRoom';
 import RoomList_owner from './pages/HotelOwners/RoomList_owner';
+import { UseAppContext } from './context/AppContext';
 
 const App = () => {
 
@@ -17,12 +21,12 @@ const App = () => {
 
   //hide navbar on owner path
   const isOwnerPath = useLocation().pathname.startsWith('/my-hotels');
-
-  const [showRegistration, setShowRegistration] = useState(false);
+  const {showHotelReg} = UseAppContext();
   return (
     <div>
+      <Toaster/>
       {!isOwnerPath && <NavBar />}
-      {false && <HotelRegistration />}
+      {showHotelReg && <HotelRegistration />}
       <div className='min-h-[70vh]'>
 
         <Routes>
