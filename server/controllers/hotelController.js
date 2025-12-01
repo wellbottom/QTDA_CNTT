@@ -26,7 +26,7 @@ export const registerHotel = async (req, res) => {
 };
 
 
-// GET /hotels/owner/:ownerId
+// GET /hotels/:ownerId
 export const getHotelsByOwner = async (req, res) => {
     try {
         const ownerId = req.params.ownerId || req.query.ownerId;

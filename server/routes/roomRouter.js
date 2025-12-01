@@ -1,7 +1,7 @@
 import express from 'express'
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import upload from '../middleware/uploadMiddleware.js';
-import { createRoom, getRoom, getRoomsByHotel, toggleRoomAvailability } from '../controllers/roomController.js';
+import { createRoom, getRoom, getRoomById, getRoomsByHotel, toggleRoomAvailability } from '../controllers/roomController.js';
 
 const roomRouter = express.Router();
 
@@ -10,6 +10,10 @@ roomRouter.post('/', upload.array("images", 5), authenticateUser, createRoom);
 
 //GET available rooms
 roomRouter.get('/', getRoom);
+
+//GET room by Id
+roomRouter.get('/:roomId', getRoomById);
+
 
 // GET rooms for a specific hotel
 roomRouter.get("/all-rooms-by-hotels/:hotelId", getRoomsByHotel);

@@ -1,11 +1,33 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { roomsDummyData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { assets, facilityIcons } from '../assets/assets'
+import HotelList from '../components/HotelList'
+import { UseAppContext } from '../context/AppContext'
 const RoomList = () => {
 
   const navigate = useNavigate();
   const [openFilter, setOpenFilter] = useState(false);
+  const {axios} = UseAppContext();
+
+  const [roomsList, setRoomList] = useState([]);
+  const fetchRooms = async () => {
+        try {
+            const { data } = await axios.get('/api/rooms');
+            if (data.success) {
+                console.log(data);
+                setRoomList(data.availableRooms);
+            } else {
+                console.error('Failed to fetch rooms:', data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching rooms:', error);
+        }
+    }
+
+    useEffect(()=>{
+      fetchRooms();
+    },[])
   const roomTypes = [
     'single bed',
     'double bed',
@@ -24,6 +46,7 @@ const RoomList = () => {
     'price high to low',
     'newest first'
   ]
+
   // Checkbox component
   const Checkbox = ({ label, selected = false, onChange }) => {
     return (
@@ -70,7 +93,7 @@ const RoomList = () => {
           </p>
         </div>
 
-        {roomsDummyData.map((room) => (
+        {roomsList.map((room) => (
           <div className='flex flex-col md:flex-row items-start py-10 gap-6
   border-b border-gray-300 last:pb-30 last:border-0'>
             <img onClick={() => { navigate(`/rooms/${room._id}`); scrollTo(0, 0) }}

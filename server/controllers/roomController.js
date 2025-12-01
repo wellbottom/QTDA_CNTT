@@ -11,7 +11,6 @@ export const createRoom = async (req, res) => {
     if (!hotelId) {
       return res.json({ success: false, message: "hotelId is required" });
     }
-
     // Validate that hotel exists AND belongs to this owner
     const hotel = await HotelModel.findOne({
       _id: hotelId,
@@ -54,19 +53,41 @@ export const createRoom = async (req, res) => {
 
 //GET /api/rooms (isAvailable:true)
 export const getRoom = async (req, res) => {
-    try {
-        const availableRooms = await RoomModel.find({ isAvailable: true }).populate({
-            path: 'hotel',
-            populate: {
-                path: 'owner',
-                select: 'image'
-            }
-        }).sort({ createdAt: -1 });
+  try {
+    const limit = parseInt(req.query.limit) || 0;
+    const availableRooms = await RoomModel.find({ isAvailable: true }).populate({
+      path: 'hotel',
+      populate: {
+        path: 'owner',
+        select: 'image'
+      }
+    }).sort({ createdAt: -1 }).limit(limit);
 
-        res.json({ success: true, availableRooms });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
+    res.json({ success: true, availableRooms });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+}
+
+
+//GET /api/rooms 
+export const getRoomById = async (req, res) => {
+  try {
+    const roomId = req.params.roomId || req.query.roomId;
+    
+    const limit = parseInt(req.query.limit) || 0;
+    const availableRooms = await RoomModel.findById(roomId).populate({
+      path: 'hotel',
+      populate: {
+        path: 'owner',
+        select: 'image name'
+      }
+    });
+
+    res.json({ success: true, availableRooms });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
 }
 
 
@@ -76,37 +97,37 @@ export const getRoom = async (req, res) => {
 
 // GET /all-rooms-by-hotels/:hotelId
 export const getRoomsByHotel = async (req, res) => {
-    try {
-        const hotelId = req.params.hotelId || req.query.hotelId;
+  try {
+    const hotelId = req.params.hotelId || req.query.hotelId;
 
-        if (!hotelId) {
-            return res.status(400).json({
-                success: false,
-                message: "hotelId is required"
-            });
-        }
-
-        const rooms = await RoomModel.find({ hotel: hotelId })
-            .populate("hotel")
-            .sort({ createdAt: -1 });
-
-        res.json({ success: true, rooms });
-    } catch (err) {
-        res.json({ success: false, message: err.message });
+    if (!hotelId) {
+      return res.status(400).json({
+        success: false,
+        message: "hotelId is required"
+      });
     }
+
+    const rooms = await RoomModel.find({ hotel: hotelId })
+      .populate("hotel")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, rooms });
+  } catch (err) {
+    res.json({ success: false, message: err.message });
+  }
 };
 
 
 //PUT
 export const toggleRoomAvailability = async (req, res) => {
-    try {
-        const { roomId } = req.body;
-        const roomData = await RoomModel.findById(roomId);
+  try {
+    const { roomId } = req.body;
+    const roomData = await RoomModel.findById(roomId);
 
-        roomData.isAvailable = !roomData.isAvailable;
-        await roomData.save();
-        res.json({ success: true, message: "Room availability changed" })
-    } catch (error) {
-        res.json({ success: false, message: error.message })
-    }
+    roomData.isAvailable = !roomData.isAvailable;
+    await roomData.save();
+    res.json({ success: true, message: "Room availability changed" })
+  } catch (error) {
+    res.json({ success: false, message: error.message })
+  }
 }

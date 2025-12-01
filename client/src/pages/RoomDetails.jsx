@@ -1,19 +1,136 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { roomCommonData, roomsDummyData, facilityIcons, assets } from '../assets/assets'
-
+import { UseAppContext } from '../context/AppContext'
+import toast from 'react-hot-toast'
+import { useUser } from '@clerk/clerk-react'
 const RoomDetails = () => {
     const { id } = useParams()
     const [room, setRoom] = useState(null)
     const [mainImage, setMainImage] = useState(null)
+    const [checkinDate, setCheckinDate] = useState(null);
+    const [checkoutDate, setCheckoutDate] = useState(null);
+    const [guests, setGuest] = useState(0);
+    const [isChecking, setIsChecking] = useState(false);
+    const [isAvailable, setIsAvailable] = useState(false);
+
+    const { user } = useUser();
+
+    const { axios, getToken } = UseAppContext();
+
+
+
+    const fetchRoomById = async (roomId) => {
+        try {
+            const { data } = await axios.get(`/api/rooms/${roomId}`);
+            if (data.success) {
+                console.log(data);
+                return data.availableRooms; // Changed from data to data.room
+            }
+        } catch (error) {
+            console.error('Error fetching room:', error);
+        }
+    }
+
+    const checkRoomAvailability = async (roomId, checkInDate, checkOutDate) => {
+        setIsChecking(true);
+        try {
+            const { data } = await axios.post(
+                '/api/bookings/check-availability',
+                {
+                    room: roomId,
+                    checkInDate,
+                    checkOutDate
+                }
+            );
+
+            if (data.success) {
+                setIsAvailable(data.is_Available);
+                if (data.is_Available) {
+                    toast.success('Room is available for selected dates!');
+                    console.log(data)
+                    setIsAvailable(true);
+                } else {
+                    toast.error('Room is not available for selected dates');
+                }
+                return data.is_Available;
+            } else {
+                toast.error(data.message || 'Failed to check availability');
+                console.log(data.message)
+                return false;
+            }
+        } catch (error) {
+            console.error('Error checking availability:', error);
+            toast.error(error.response?.data?.message || 'Failed to check availability');
+            return false;
+        } finally {
+            setIsChecking(false);
+        }
+    };
+
+    const createBooking = async (roomId, checkInDate, checkOutDate, guests) => {
+        console.log("🔵 createBooking called with:", { roomId, checkInDate, checkOutDate, guests });
+
+        if (!checkInDate) {
+            console.log("❌ No check-in date");
+            toast.error("Check in date required");
+            return;
+        }
+        if (!checkOutDate) {
+            console.log("❌ No check-out date");
+            toast.error("Check out date required");
+            return;
+        }
+        if (!guests) {
+            console.log("❌ No guests");
+            toast.error("Guests number required");
+            return;
+        }
+        if (!roomId) {
+            console.log("❌ No room ID");
+            toast.error("Logic error, no room id found");
+            return;
+        }
+
+        console.log("✅ All validations passed, making API call...");
+
+        try {
+            const token = await getToken();
+            console.log("🔑 Token:", token ? "exists" : "missing");
+
+            const { data } = await axios.post('/api/bookings',
+                { room:roomId, checkInDate, checkOutDate, guests },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("📡 Response:", data);
+
+            if (data.success) {
+                toast.success("Booked!");
+                setCheckinDate('');
+                setCheckoutDate('');
+                setGuest(0);
+                setIsAvailable(false)
+            } else {
+
+                toast.error(data.message || "Booking failed");
+            }
+        } catch (error) {
+
+            toast.error(error.response?.data?.message || "Failed to create booking");
+        }
+    }
 
     useEffect(() => {
-        // Find room by id from dummy data
-        const foundRoom = roomsDummyData.find((r) => r._id === id)
-        if (foundRoom) {
-            setRoom(foundRoom)
-            setMainImage(foundRoom.images[0])
-        }
+        const loadRoom = async () => {
+            const foundRoom = await fetchRoomById(id); // Added await
+            if (foundRoom) {
+                setRoom(foundRoom);
+                setMainImage(foundRoom.images[0]);
+            }
+        };
+
+        loadRoom();
     }, [id])
 
     if (!room) {
@@ -102,53 +219,72 @@ const RoomDetails = () => {
 
                 {/* ---------- BOOKING BAR (horizontal card) ---------- */}
                 <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200">
-                    <form className="flex flex-col md:flex-row items-center gap-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 w-full">
-                            <div className="space-y-2">
-                                <label htmlFor="checkin-date" className="block text-sm font-medium text-gray-900">Check in</label>
-                                <input
-                                    type="date"
-                                    id="checkin-date"
-                                    className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Add date"
-                                    required
-                                />
+                    <div>
+                        <form className="flex flex-col md:flex-row items-center gap-4" onSubmit={(e) => { e.preventDefault(); checkRoomAvailability(id, checkinDate, checkoutDate) }}>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 w-full">
+                                <div className="space-y-2">
+                                    <label htmlFor="checkin-date" className="block text-sm font-medium text-gray-900">Check in</label>
+                                    <input
+                                        type="date"
+                                        id="checkin-date"
+                                        className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Add date"
+                                        required
+                                        value={checkinDate}
+                                        onChange={(e) => setCheckinDate(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="checkout-date" className="block text-sm font-medium text-gray-900">Check out</label>
+                                    <input
+                                        type="date"
+                                        id="checkout-date"
+                                        className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Add date"
+                                        required
+                                        value={checkoutDate}
+                                        onChange={(e) => setCheckoutDate(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label htmlFor="guests" className="block text-sm font-medium text-gray-900">Guests</label>
+                                    <input
+                                        type="number"
+                                        id="guests"
+                                        min="1"
+                                        className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="2 guests"
+                                        required
+                                        value={guests}
+                                        onChange={(e) => setGuest(e.target.value)}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <label htmlFor="checkout-date" className="block text-sm font-medium text-gray-900">Check out</label>
-                                <input
-                                    type="date"
-                                    id="checkout-date"
-                                    className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Add date"
-                                    required
-                                />
+                            <div className="md:w-56 w-full">
+                                <button
+                                    type="submit"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                                >
+                                    Check Availability
+                                </button>
                             </div>
 
-                            <div className="space-y-2">
-                                <label htmlFor="guests" className="block text-sm font-medium text-gray-900">Guests</label>
-                                <input
-                                    type="number"
-                                    id="guests"
-                                    min="1"
-                                    className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="2 guests"
-                                    required
-                                />
-                            </div>
-                        </div>
+                        </form>
 
-                        <div className="md:w-56 w-full">
-                            <button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
-                            >
-                                Check Availability
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+
                 </div>
+                {isAvailable &&
+                    <div className="md:w-56 w-full">
+                        <button
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 px-6 rounded-2xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5"
+                            onClick={() => {console.log("roomId: ", id);createBooking(id, checkinDate, checkoutDate, guests)}}>
+                            Book now
+                        </button>
+                    </div>}
 
                 {/* ---------- COMMON SPECIFICATIONS (list) ---------- */}
                 <div className="space-y-6">
@@ -181,7 +317,7 @@ const RoomDetails = () => {
                     <div className="flex-1">
                         <div className="flex items-center gap-4 mb-2">
                             <p className="text-gray-500">Hosted by</p>
-                            <p className="text-xl font-semibold text-gray-900">{room.hotel.owner.username}</p>
+                            <p className="text-xl font-semibold text-gray-900">{room.hotel.owner.name}</p>
                         </div>
 
                         <div className="text-gray-600">

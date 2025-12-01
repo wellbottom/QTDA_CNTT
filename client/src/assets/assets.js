@@ -37,7 +37,7 @@ import listIcon from "./listIcon.svg";
 import uploadArea from "./uploadArea.svg";
 import totalBookingIcon from "./totalBookingIcon.svg";
 import totalRevenueIcon from "./totalRevenueIcon.svg";
-
+import acIcon from "./air-conditioner.png"
 
 export const assets = {
     logo,
@@ -72,6 +72,7 @@ export const assets = {
     uploadArea,
     totalBookingIcon,
     totalRevenueIcon,
+    acIcon
 }
 
 export const cities = [
@@ -102,12 +103,15 @@ export const testimonials = [
 // Facility Icon
 export const facilityIcons = {
     "Free WiFi": assets.freeWifiIcon,
+    "Free Wi-Fi": assets.freeWifiIcon, // Added hyphenated version
     "Free Breakfast": assets.freeBreakfastIcon,
+    "Breakfast Included": assets.freeBreakfastIcon, // Added alternative naming
     "Room Service": assets.roomServiceIcon,
     "Mountain View": assets.mountainIcon,
     "Pool Access": assets.poolIcon,
+    "Swimming Pool": assets.poolIcon, // Added alternative naming
+    "Air Conditioning": assets.acIcon, // You'll need to add this icon to your assets
 };
-
 // For Room Details Page
 export const roomCommonData = [
     { icon: assets.homeIcon, title: "Clean & Safe Stay", description: "A well-maintained and hygienic space just for you." },

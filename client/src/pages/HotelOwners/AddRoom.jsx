@@ -1,9 +1,114 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Title from '../../components/Title'
 import { assets } from '../../assets/assets'
-import StyledButton from '../../components/StyledButton'
+import toast from 'react-hot-toast'
+import { useUser } from '@clerk/clerk-react'
+import { UseAppContext } from '../../context/AppContext'
+import HotelListComponent from '../../components/HotelList'
+
 const AddRoom = () => {
 
+
+    const { axios, getToken } = UseAppContext();
+    const [hotelList, setHotelList] = useState([]);
+    const [selectedHotel, setSelectedHotel] = useState('');
+    const { user } = useUser();
+
+    const fetchAllHotels = async (ownerId) => {
+        try {
+            const { data } = await axios.get(`/api/hotels/${ownerId}`, { headers: { Authorization: `Bearer ${await getToken()}` } });
+            if (data.success) {
+                toast.success(data.message);
+                setHotelList(data.hotels || []);
+                console.log(data);
+            } else {
+                console.log(data.message);
+                toast.error(data.message);
+                setHotelList([]);
+            }
+        } catch (error) {
+            console.error('Error fetching hotels:', error);
+            toast.error(error.response?.data?.message || 'Failed to fetch hotels');
+            setHotelList([]);
+        }
+    };
+
+
+    const createRoomInHotel = async (e) => {
+        e.preventDefault();
+        
+        if (!selectedHotel) {
+            toast.error('Please select a hotel');
+            return;
+        }
+        
+        if (!inputs.roomType) {
+            toast.error('Please select a room type');
+            return;
+        }
+
+        if (!inputs.pricePerNight) {
+            toast.error('Please enter price per night');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('hotelId', selectedHotel);
+            formData.append('roomType', inputs.roomType);
+            formData.append('pricePerNight', inputs.pricePerNight);
+            formData.append('description', inputs.description);
+            
+            // Convert amenities object to array of selected amenities
+            const amenitiesArray = Object.keys(inputs.amenities).filter(key => inputs.amenities[key]);
+            formData.append('amenities', JSON.stringify(amenitiesArray));
+            formData.append('roomNumber', inputs.roomNumber);
+
+            // Add images
+            Object.keys(images).forEach((key) => {
+                if (images[key]) {
+                    formData.append('images', images[key]);
+                }
+            });
+
+            const { data } = await axios.post('/api/rooms', formData, {
+                headers: {
+                    Authorization: `Bearer ${await getToken()}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (data.success) {
+                toast.success('Room created successfully');
+                // Reset form
+                setInputs({
+                    roomNumber: '',
+                    roomType: '',
+                    pricePerNight: '',
+                    amenities: {
+                        'Free Wi-Fi': false,
+                        'Air Conditioning': false,
+                        'Breakfast Included': false,
+                        'Swimming Pool': false,
+                    },
+                    description: ''
+                });
+                setImages({
+                    1: null,
+                    2: null,
+                    3: null,
+                    4: null,
+                    5: null
+                });
+                setSelectedHotel('');
+            } else {
+                toast.error(data.message || 'Failed to create room');
+            }
+        } catch (error) {
+            console.error('Error creating room:', error);
+            toast.error(error.response?.data?.message || 'Failed to create room');
+        }
+    };
     const [images, setImages] = useState({
         1: null,
         2: null,
@@ -23,14 +128,25 @@ const AddRoom = () => {
         },
         description: ''
     })
+
+    useEffect(() => {
+        if (user) {
+            fetchAllHotels(user.id);
+        }
+    }, [user])
+
+
     return (
-        <form>
+        <form onSubmit={createRoomInHotel}>
             <Title
                 align='left'
                 font='outfit'
                 title='Add Room'
                 subTitle='Fill in the details carefully and accurate room details, pricing, and amenities, to enhance the user booking experience.'
             />
+
+            {/* Hotel Selection */}
+            <HotelListComponent hotelList={hotelList} selectedHotel={selectedHotel} setSelectedHotel={setSelectedHotel} />
 
             {/* Upload Area For Images */}
             <p className='text-gray-800 mt-10'>Images</p>
@@ -112,9 +228,11 @@ const AddRoom = () => {
                 ))}
             </div>
             <div className='mt-5'>
-                <StyledButton text='Submit' />
+                <button type='submit' className='px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition'>
+                    Submit
+                </button>
             </div>
-            
+
 
 
 

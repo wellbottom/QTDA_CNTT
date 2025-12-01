@@ -51,7 +51,12 @@ export const createBooking = async(req, res) =>{
         }
 
         const roomData = await RoomModel.findById(room).populate("hotel");
-
+        if(roomData){
+            console.log("Exist room in database");
+        }else{
+            console.log("Doesn't find room in database. returning");
+            return;
+        }
 
         //total price = price per night * number of nights (floor)
         const checkIn = new Date(checkInDate).getTime();
